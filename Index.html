@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tra cứu thông tin & Đăng ký thi - Trường CĐ GTVT TP.HCM</title>
+  <style>
+    body {
+      font-family: Tahoma, "Helvetica Neue", Arial, sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 10px;
+      color: #111;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h2 { text-align: center; color: #1a365d; font-size: 16px; margin-bottom: 4px; }
+    h3 { text-align: center; color: #d69e2e; font-size: 14px; margin-bottom: 12px; }
+    .badge-date {
+      text-align: center; background: #feebc8; color: #744210;
+      padding: 5px 10px; border-radius: 20px; font-weight: bold;
+      display: inline-block; margin: 0 auto 12px auto; font-size: 13px;
+    }
+    .date-wrapper { text-align: center; }
+    .search-box-container { display: flex; gap: 6px; margin-bottom: 15px; }
+    .search-box-container input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+    .search-box-container button { padding: 10px 16px; background-color: #1a365d; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    
+    .result-section { display: none; margin-top: 15px; border-top: 2px solid #e2e8f0; padding-top: 12px; }
+    .result-title { background: #1a365d; color: white; text-align: center; padding: 8px; font-weight: bold; border-radius: 6px 6px 0 0; font-size: 14px; }
+    table.info-table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13.5px; }
+    table.info-table th, table.info-table td { border: 1px solid #e2e8f0; padding: 8px 9px; vertical-align: middle; }
+    table.info-table th { width: 35%; background: #f7fafc; color: #2d3748; text-align: left; }
+    .highlight-main { font-weight: bold; color: #1a365d; }
+    .highlight-warning { font-weight: bold; color: #e53e3e; }
+    .highlight-success { font-weight: bold; color: #2f855a; }
+    .alert-box { padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; font-weight: bold; font-size: 13.5px; }
+    .alert-error { background-color: #fff5f5; color: #e53e3e; border: 1px solid #feb2b2; }
+    .alert-success { background-color: #f0fff4; color: #2b6cb0; border: 1px solid #c6f6d5; }
+    .alert-passed { background-color: #f0fff4; color: #276749; border: 1px solid #9ae6b4; }
+    .alert-registered { background-color: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; }
+    .btn-register { display: block; width: 100%; padding: 11px; background-color: #38a169; color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 12px; }
+    .btn-cancel { display: block; width: 100%; padding: 11px; background-color: #e53e3e; color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 12px; }
+    .loading { text-align: center; color: #718096; font-style: italic; display: none; margin: 12px 0; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>TRƯỜNG CAO ĐẲNG GIAO THÔNG VẬN TẢI THÀNH PHỐ HỒ CHÍ MINH</h2>
+    <h3>HỆ THỐNG TRA CỨU THÔNG TIN THÍ SINH VÀ ĐĂNG KÝ SÁT HẠCH LÁI XE</h3>
+    
+    <div class="date-wrapper">
+      <div class="badge-date" id="ngayDuKienBadge">Ngày sát hạch dự kiến: Đang tải...</div>
+    </div>
+
+    <div class="search-box-container">
+      <input type="text" id="cccdInput" placeholder="Nhập số căn cước..." onkeypress="handleKeyPress(event)" />
+      <button onclick="xuLyTraCuu()">Tra cứu</button>
+    </div>
+
+    <div id="loading" class="loading">Hệ thống đang xử lý, vui lòng chờ...</div>
+    <div id="messageContainer"></div>
+
+    <div id="resultSection" class="result-section">
+      <div class="result-title">THÔNG TIN ĐĂNG KÝ SÁT HẠCH CỦA THÍ SINH</div>
+      <table class="info-table">
+        <tr><th>Họ và tên</th><td id="valHoTen" class="highlight-main"></td></tr>
+        <tr><th>Ngày sinh</th><td id="valNgaySinh"></td></tr>
+        <tr><th>Số căn cước</th><td id="valCccd" class="highlight-main"></td></tr>
+        <tr><th>Số điện thoại</th><td id="valSdt"></td></tr>
+        <tr><th>Ngày khám SK</th><td id="valSk"></td></tr>
+        <tr><th>GPLX đã có</th><td id="valHangGplx"></td></tr>
+        <tr><th>Số GPLX đã có</th><td id="valSoGplx"></td></tr>
+        <tr><th>Mã khóa học</th><td id="valMaKhoa"></td></tr>
+        <tr><th>Ngày KG - BG</th><td id="valKhaiGiang"></td></tr>
+        <tr><th>Tên khóa học</th><td id="valTenKhoa"></td></tr>
+        <tr><th>Tốt nghiệp khóa</th><td id="valTotNghiep"></td></tr>
+        <tr><th>Số xác nhận tốt nghiệp</th><td id="valSoTN"></td></tr>
+        <tr><th>Thi cấp GPLX </th><td id="valHangThi" class="highlight-main"></td></tr>
+        <tr><th>Số lần sát hạch</th><td id="valLichSu"></td></tr>
+        <tr><th>Số lần bỏ lỡ đóng lệ phí thi</th><td id="valPhi"></td></tr>
+        <tr><th>Nội dung sát hạch sắp tới</th><td id="valNoiDung" class="highlight-main"></td></tr>
+      </table>
+      <div id="actionContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    // 🔗 THAY ĐƯỜNG DẪN WEB APP APPS SCRIPT CỦA THẦY VÀO ĐÂY:
+    const API_URL = "https://script.google.com/macros/s/AKfycb.../exec";
+
+    window.onload = function() {
+      fetch(API_URL + "?action=layThongTinChung")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('ngayDuKienBadge').innerText = "Ngày sát hạch dự kiến: " + data.ngayDuKien;
+        })
+        .catch(err => console.log("Lỗi tải ngày dự kiến"));
+    };
+
+    function handleKeyPress(e) {
+      if (e.key === 'Enter') { xuLyTraCuu(); }
+    }
+
+    function xuLyTraCuu() {
+      var cccd = document.getElementById('cccdInput').value.trim();
+      if (!cccd) { alert('Vui lòng nhập số căn cước công dân!'); return; }
+
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('resultSection').style.display = 'none';
+      document.getElementById('messageContainer').innerHTML = '';
+
+      fetch(API_URL + "?action=tracuu&cccd=" + encodeURIComponent(cccd))
+        .then(res => res.json())
+        .then(res => {
+          document.getElementById('loading').style.display = 'none';
+          hienThiKetQua(res);
+        })
+        .catch(err => {
+          document.getElementById('loading').style.display = 'none';
+          alert('Lỗi kết nối API: ' + err.message);
+        });
+    }
+
+    function hienThiKetQua(res) {
+      var msgDiv = document.getElementById('messageContainer');
+      if (res.status === 'not_found' || res.status === 'error') {
+        msgDiv.innerHTML = '<div class="alert-box alert-error">' + res.message + '</div>';
+        return;
+      }
+
+      var d = res.data;
+      document.getElementById('valHoTen').innerText = d.hoTen || '';
+      document.getElementById('valNgaySinh').innerText = d.ngaySinh || '';
+      document.getElementById('valCccd').innerText = d.cccd || '';
+      document.getElementById('valSdt').innerText = d.sdt || '';
+      document.getElementById('valSk').innerText = d.ngayKhamSK || '';
+      document.getElementById('valHangGplx').innerText = d.gplx || 'Chưa có';
+      document.getElementById('valSoGplx').innerText = d.soGplx || 'Không có';
+      document.getElementById('valMaKhoa').innerText = d.maKhoa || '';
+      document.getElementById('valKhaiGiang').innerText = d.khaiGiangBegiang || '';
+      document.getElementById('valTenKhoa').innerText = d.tenChinhKhoa || '';
+      document.getElementById('valTotNghiep').innerText = d.totNghiepKhoa || '';
+      document.getElementById('valSoTN').innerText = d.soTN || '';
+      document.getElementById('valHangThi').innerText = d.hangThi || '';
+
+      var lsHtml = '';
+      if (d.lichSuThi && d.lichSuThi.length > 0) {
+        d.lichSuThi.forEach(function(item, index) {
+          lsHtml += 'Lần ' + (index + 1) + ' - ' + item.ngay + ' - ' + item.ketQua + '<br>';
+        });
+      } else { lsHtml = 'Chưa có lịch sử sát hạch'; }
+      document.getElementById('valLichSu').innerHTML = lsHtml;
+
+      var phiEl = document.getElementById('valPhi');
+      if (d.danhSachKhongDongPhi && d.danhSachKhongDongPhi.length > 0) {
+        phiEl.innerText = d.danhSachKhongDongPhi.length + ' lần (Các kỳ bỏ lỡ: ' + d.danhSachKhongDongPhi.join(', ') + ')';
+      } else {
+        phiEl.innerText = '0 lần (Đã hoàn thành đầy đủ học phí/lệ phí)';
+      }
+
+      document.getElementById('valNoiDung').innerText = d.noiDungMoi || '';
+
+      var actionHtml = '';
+      if (!d.isValid) {
+        if (d.isPassedNotice) {
+          msgDiv.innerHTML = '<div class="alert-box alert-passed">' + d.errorMessage + '</div>';
+        } else {
+          msgDiv.innerHTML = '<div class="alert-box alert-error">' + d.errorMessage + '</div>';
+        }
+      } else {
+        if (d.isRegistered) {
+          msgDiv.innerHTML = '<div class="alert-box alert-registered">THÔNG BÁO: Thí sinh đã đăng ký sát hạch ngày ' + d.registeredDate + '</div>';
+          if (d.isFullCapacity) {
+            actionHtml = '<div class="alert-box alert-error" style="text-align:center;">DANH SÁCH ĐÃ ĐẠT CHỈ TIÊU 650, HỆ THỐNG TẠM KHÓA TÍNH NĂNG HỦY.</div>';
+          } else {
+            actionHtml = '<button class="btn-cancel" onclick="guiHuyDangKy(\'' + d.cccd + '\')">HỦY ĐĂNG KÝ SÁT HẠCH</button>';
+          }
+        } else {
+          msgDiv.innerHTML = '<div class="alert-box alert-success">THÔNG BÁO: Hồ sơ hợp lệ và đủ điều kiện đăng ký sát hạch.</div>';
+          actionHtml = '<button class="btn-register" onclick="guiDangKy(\'' + d.cccd + '\')">ĐĂNG KÝ SÁT HẠCH NGAY</button>';
+        }
+      }
+      document.getElementById('actionContainer').innerHTML = actionHtml;
+      document.getElementById('resultSection').style.display = 'block';
+    }
+
+    function guiDangKy(cccd) {
+      if (!confirm('Xác nhận đăng ký sát hạch cho số CCCD: ' + cccd + ' ?')) return;
+      document.getElementById('loading').style.display = 'block';
+
+      fetch(API_URL + "?action=dangky&cccd=" + encodeURIComponent(cccd))
+        .then(res => res.json())
+        .then(res => {
+          document.getElementById('loading').style.display = 'none';
+          alert(res.message);
+          xuLyTraCuu();
+        })
+        .catch(err => { document.getElementById('loading').style.display = 'none'; alert('Lỗi: ' + err.message); });
+    }
+
+    function guiHuyDangKy(cccd) {
+      if (!confirm('Xác nhận HỦY đăng ký sát hạch cho số CCCD: ' + cccd + ' ?')) return;
+      document.getElementById('loading').style.display = 'block';
+
+      fetch(API_URL + "?action=huydangky&cccd=" + encodeURIComponent(cccd))
+        .then(res => res.json())
+        .then(res => {
+          document.getElementById('loading').style.display = 'none';
+          alert(res.message);
+          xuLyTraCuu();
+        })
+        .catch(err => { document.getElementById('loading').style.display = 'none'; alert('Lỗi: ' + err.message); });
+    }
+  </script>
+</body>
+</html>
