@@ -41,7 +41,7 @@
     .highlight-main { font-weight: bold; color: #1a365d; }
     .highlight-warning { font-weight: bold; color: #e53e3e; }
     .highlight-success { font-weight: bold; color: #2f855a; }
-    .alert-box { padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; font-weight: bold; font-size: 13.5px; }
+    .alert-box { padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; font-weight: bold; font-size: 13.5px; line-height: 1.4; }
     .alert-error { background-color: #fff5f5; color: #e53e3e; border: 1px solid #feb2b2; }
     .alert-success { background-color: #f0fff4; color: #2b6cb0; border: 1px solid #c6f6d5; }
     .alert-passed { background-color: #f0fff4; color: #276749; border: 1px solid #9ae6b4; }
@@ -94,7 +94,6 @@
   </div>
 
   <script>
-    // 🔗 THAY ĐƯỜNG DẪN WEB APP APPS SCRIPT CỦA THẦY VÀO ĐÂY:
     const API_URL = "https://script.google.com/macros/s/AKfycbxpZdjYEg2mh04DniqApxIiIRgtCW56OaeVdZU8keaf6pfOI__wsVTyUih3vlqaxs1q/exec";
 
     window.onload = function() {
@@ -142,13 +141,29 @@
       document.getElementById('valNgaySinh').innerText = d.ngaySinh || '';
       document.getElementById('valCccd').innerText = d.cccd || '';
       document.getElementById('valSdt').innerText = d.sdt || '';
-      document.getElementById('valSk').innerText = d.ngayKhamSK || '';
+
+      var skEl = document.getElementById('valSk');
+      skEl.innerText = d.ngayKhamSK || '';
+      if (String(d.ngayKhamSK).indexOf("Thiếu") !== -1 || String(d.ngayKhamSK).indexOf("hết hạn") !== -1) {
+        skEl.className = "highlight-warning";
+      } else {
+        skEl.className = "highlight-success";
+      }
+
       document.getElementById('valHangGplx').innerText = d.gplx || 'Chưa có';
       document.getElementById('valSoGplx').innerText = d.soGplx || 'Không có';
       document.getElementById('valMaKhoa').innerText = d.maKhoa || '';
       document.getElementById('valKhaiGiang').innerText = d.khaiGiangBegiang || '';
       document.getElementById('valTenKhoa').innerText = d.tenChinhKhoa || '';
-      document.getElementById('valTotNghiep').innerText = d.totNghiepKhoa || '';
+
+      var tnEl = document.getElementById('valTotNghiep');
+      tnEl.innerText = d.totNghiepKhoa || '';
+      if (String(d.totNghiepKhoa).indexOf("chưa học") !== -1 || String(d.totNghiepKhoa).indexOf("chờ xét") !== -1) {
+        tnEl.className = "highlight-warning";
+      } else {
+        tnEl.className = "highlight-success";
+      }
+
       document.getElementById('valSoTN').innerText = d.soTN || '';
       document.getElementById('valHangThi').innerText = d.hangThi || '';
 
@@ -163,8 +178,10 @@
       var phiEl = document.getElementById('valPhi');
       if (d.danhSachKhongDongPhi && d.danhSachKhongDongPhi.length > 0) {
         phiEl.innerText = d.danhSachKhongDongPhi.length + ' lần (Các kỳ bỏ lỡ: ' + d.danhSachKhongDongPhi.join(', ') + ')';
+        phiEl.className = "highlight-warning";
       } else {
         phiEl.innerText = '0 lần (Đã hoàn thành đầy đủ học phí/lệ phí)';
+        phiEl.className = "highlight-success";
       }
 
       document.getElementById('valNoiDung').innerText = d.noiDungMoi || '';
