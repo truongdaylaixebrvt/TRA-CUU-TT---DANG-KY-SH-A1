@@ -32,6 +32,7 @@
     .search-box-container { display: flex; gap: 6px; margin-bottom: 15px; }
     .search-box-container input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
     .search-box-container button { padding: 10px 16px; background-color: #1a365d; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .search-box-container button:disabled { background-color: #a0aec0; cursor: not-allowed; }
     
     .result-section { display: none; margin-top: 15px; border-top: 2px solid #e2e8f0; padding-top: 12px; }
     .result-title { background: #1a365d; color: white; text-align: center; padding: 8px; font-weight: bold; border-radius: 6px 6px 0 0; font-size: 14px; }
@@ -41,13 +42,14 @@
     .highlight-main { font-weight: bold; color: #1a365d; }
     .highlight-warning { font-weight: bold; color: #e53e3e; }
     .highlight-success { font-weight: bold; color: #2f855a; }
-    .alert-box { padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; font-weight: bold; font-size: 13.5px; line-height: 1.4; }
+    .alert-box { padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; font-weight: bold; font-size: 13.5px; line-height: 1.45; }
     .alert-error { background-color: #fff5f5; color: #e53e3e; border: 1px solid #feb2b2; }
     .alert-success { background-color: #f0fff4; color: #2b6cb0; border: 1px solid #c6f6d5; }
     .alert-passed { background-color: #f0fff4; color: #276749; border: 1px solid #9ae6b4; }
     .alert-registered { background-color: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; }
     .btn-register { display: block; width: 100%; padding: 11px; background-color: #38a169; color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 12px; }
     .btn-cancel { display: block; width: 100%; padding: 11px; background-color: #e53e3e; color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 12px; }
+    .btn-register:disabled, .btn-cancel:disabled { background-color: #a0aec0; cursor: not-allowed; }
     .loading { text-align: center; color: #718096; font-style: italic; display: none; margin: 12px 0; }
   </style>
 </head>
@@ -63,7 +65,7 @@
 
     <div class="search-box-container">
       <input type="text" id="cccdInput" placeholder="Nhập số căn cước..." onkeypress="handleKeyPress(event)" />
-      <button onclick="xuLyTraCuu()">Tra cứu</button>
+      <button id="btnSearch" onclick="xuLyTraCuu()">Tra cứu</button>
     </div>
 
     <div id="loading" class="loading">Hệ thống đang xử lý, vui lòng chờ...</div>
@@ -110,9 +112,14 @@
     }
 
     function xuLyTraCuu() {
-      var cccd = document.getElementById('cccdInput').value.trim();
+      var inputEl = document.getElementById('cccdInput');
+      var cccd = inputEl.value.replace(/\s+/g, '').trim();
+      inputEl.value = cccd;
+
       if (!cccd) { alert('Vui lòng nhập số căn cước công dân!'); return; }
 
+      var btnSearch = document.getElementById('btnSearch');
+      btnSearch.disabled = true;
       document.getElementById('loading').style.display = 'block';
       document.getElementById('resultSection').style.display = 'none';
       document.getElementById('messageContainer').innerHTML = '';
@@ -120,10 +127,12 @@
       fetch(API_URL + "?action=tracuu&cccd=" + encodeURIComponent(cccd))
         .then(res => res.json())
         .then(res => {
+          btnSearch.disabled = false;
           document.getElementById('loading').style.display = 'none';
           hienThiKetQua(res);
         })
         .catch(err => {
+          btnSearch.disabled = false;
           document.getElementById('loading').style.display = 'none';
           alert('Lỗi kết nối API: ' + err.message);
         });
@@ -145,7 +154,7 @@
       var skEl = document.getElementById('valSk');
       var textSK = String(d.ngayKhamSK || '').replace(/\(đạt\)/gi, '(còn hạn)');
       skEl.innerText = textSK;
-      if (String(d.ngayKhamSK).indexOf("Thiếu") !== -1 || String(d.ngayKhamSK).indexOf("hết hạn") !== -1) {
+      if (textSK.indexOf("Thiếu") !== -1 || textSK.indexOf("hết hạn") !== -1) {
         skEl.className = "highlight-warning";
       } else {
         skEl.className = "highlight-success";
@@ -191,20 +200,30 @@
       if (!d.isValid) {
         if (d.isPassedNotice) {
           msgDiv.innerHTML = '<div class="alert-box alert-passed">' + d.errorMessage + '</div>';
+        } else if (d.isRegistrationClosed && !d.isRegistered) {
+          var msgQuaHan = 'Thí sinh không thể đăng ký sát hạch ngày ' + d.ngaySH + ' vì hồ sơ kỳ này đã đủ chỉ tiêu 650 người và đã được mang đến Phòng Cảnh sát Giao thông chờ xét duyệt';
+          msgDiv.innerHTML = '<div class="alert-box alert-error">' + msgQuaHan + '</div>';
+          actionHtml = '<div class="alert-box alert-error" style="text-align:center; margin-top:12px;">' + msgQuaHan + '</div>';
+        } else if (d.isFullCapacity && !d.isRegistered) {
+          var msgDay650 = 'DANH SÁCH THÍ SINH ĐĂNG KÝ SÁT HẠCH KỲ NÀY ĐÃ ĐẠT CHỈ TIÊU 650 NGƯỜI. HỆ THỐNG TẠM KHÓA TÍNH NĂNG ĐĂNG KÝ & HỦY ĐĂNG KÝ ĐẾN KHI PHÒNG CẢNH SÁT CẤP LỊCH SÁT HẠCH MỚI HỆ THỐNG SẼ TỰ MỞ LẠI.';
+          msgDiv.innerHTML = '<div class="alert-box alert-error">' + msgDay650 + '</div>';
+          actionHtml = '<div class="alert-box alert-error" style="text-align:center; margin-top:12px;">' + msgDay650 + '</div>';
         } else {
           msgDiv.innerHTML = '<div class="alert-box alert-error">' + d.errorMessage + '</div>';
         }
       } else {
         if (d.isRegistered) {
-          msgDiv.innerHTML = '<div class="alert-box alert-registered">THÔNG BÁO: Thí sinh đã đăng ký tham dự kỳ sát hạch ngày ' + d.registeredDate + '  thành công.</div>';
-          if (d.isFullCapacity) {
-            actionHtml = '<div class="alert-box alert-error" style="text-align:center;">DANH SÁCH THÍ SINH ĐĂNG KÝ SÁT HẠCH KỲ NÀY ĐÃ ĐẠT CHỈ TIÊU 650 NGƯỜI. HỆ THỐNG TẠM KHÓA TÍNH NĂNG ĐĂNG KÝ & HỦY ĐĂNG KÝ ĐẾN KHI PHÒNG CẢNH SÁT CẤP LỊCH SÁT HẠCH MỚI HỆ THỐNG SẼ TỰ MỞ LẠI.</div>';
+          msgDiv.innerHTML = '<div class="alert-box alert-registered">THÔNG BÁO: Thí sinh đã đăng ký tham dự kỳ sát hạch ngày ' + d.registeredDate + ' thành công.</div>';
+          if (d.isRegistrationClosed) {
+            actionHtml = '<div class="alert-box alert-error" style="text-align:center; margin-top:12px;">HỒ SƠ KỲ THI NGÀY ' + d.registeredDate + ' ĐÃ CHỐT VÀ MANG ĐẾN PHÒNG CẢNH SÁT GIAO THÔNG CHỜ XÉT DUYỆT, HỆ THỐNG TẠM KHÓA TÍNH NĂNG HỦY.</div>';
+          } else if (d.isFullCapacity) {
+            actionHtml = '<div class="alert-box alert-error" style="text-align:center; margin-top:12px;">DANH SÁCH THÍ SINH ĐĂNG KÝ SÁT HẠCH KỲ NÀY ĐÃ ĐẠT CHỈ TIÊU 650 NGƯỜI. HỆ THỐNG TẠM KHÓA TÍNH NĂNG ĐĂNG KÝ & HỦY ĐĂNG KÝ ĐẾN KHI PHÒNG CẢNH SÁT CẤP LỊCH SÁT HẠCH MỚI HỆ THỐNG SẼ TỰ MỞ LẠI.</div>';
           } else {
-            actionHtml = '<button class="btn-cancel" onclick="guiHuyDangKy(\'' + d.cccd + '\')">HỦY ĐĂNG KÝ SÁT HẠCH</button>';
+            actionHtml = '<button id="btnCancel" class="btn-cancel" onclick="guiHuyDangKy(\'' + d.cccd + '\')">HỦY ĐĂNG KÝ SÁT HẠCH</button>';
           }
         } else {
           msgDiv.innerHTML = '<div class="alert-box alert-success">THÔNG BÁO: Hồ sơ hợp lệ và đủ điều kiện đăng ký sát hạch.</div>';
-          actionHtml = '<button class="btn-register" onclick="guiDangKy(\'' + d.cccd + '\')">ĐĂNG KÝ SÁT HẠCH NGAY</button>';
+          actionHtml = '<button id="btnRegister" class="btn-register" onclick="guiDangKy(\'' + d.cccd + '\')">ĐĂNG KÝ SÁT HẠCH NGAY</button>';
         }
       }
       document.getElementById('actionContainer').innerHTML = actionHtml;
@@ -213,6 +232,8 @@
 
     function guiDangKy(cccd) {
       if (!confirm('Xác nhận đăng ký sát hạch cho số CCCD: ' + cccd + ' ?')) return;
+      var btn = document.getElementById('btnRegister');
+      if (btn) btn.disabled = true;
       document.getElementById('loading').style.display = 'block';
 
       fetch(API_URL + "?action=dangky&cccd=" + encodeURIComponent(cccd))
@@ -222,11 +243,17 @@
           alert(res.message);
           xuLyTraCuu();
         })
-        .catch(err => { document.getElementById('loading').style.display = 'none'; alert('Lỗi: ' + err.message); });
+        .catch(err => { 
+          if (btn) btn.disabled = false;
+          document.getElementById('loading').style.display = 'none'; 
+          alert('Lỗi: ' + err.message); 
+        });
     }
 
     function guiHuyDangKy(cccd) {
       if (!confirm('Xác nhận HỦY đăng ký sát hạch cho số CCCD: ' + cccd + ' ?')) return;
+      var btn = document.getElementById('btnCancel');
+      if (btn) btn.disabled = true;
       document.getElementById('loading').style.display = 'block';
 
       fetch(API_URL + "?action=huydangky&cccd=" + encodeURIComponent(cccd))
@@ -236,7 +263,11 @@
           alert(res.message);
           xuLyTraCuu();
         })
-        .catch(err => { document.getElementById('loading').style.display = 'none'; alert('Lỗi: ' + err.message); });
+        .catch(err => { 
+          if (btn) btn.disabled = false;
+          document.getElementById('loading').style.display = 'none'; 
+          alert('Lỗi: ' + err.message); 
+        });
     }
   </script>
 </body>
