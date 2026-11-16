@@ -198,7 +198,7 @@
         if (d.isRegistered) {
           msgDiv.innerHTML = '<div class="alert-box alert-registered">THÔNG BÁO: Thí sinh đã đăng ký thành công tham dự kỳ sát hạch ngày ' + d.registeredDate + '</div>';
           if (d.isFullCapacity) {
-            actionHtml = '<div class="alert-box alert-error" style="text-align:center;">DANH SÁCH THÍ SINH ĐĂNG KÝ SÁT HẠCH ĐÃ ĐẠT CHỈ TIÊU 650 NGƯỜI, HỆ THỐNG TẠM KHÓA TÍNH NĂNG HỦY ĐĂNG KÝ ĐẾN KHI PHÒNG CẢNH SÁT CẤP LỊCH SÁT HẠCH MỚI HỆ THỐNG SẼ TỰ MỞ LẠI.</div>';
+            actionHtml = '<div class="alert-box alert-error" style="text-align:center;">DANH SÁCH THÍ SINH ĐĂNG KÝ SÁT HẠCH KỲ NÀY ĐÃ ĐẠT CHỈ TIÊU 650 NGƯỜI. HỆ THỐNG TẠM KHÓA TÍNH NĂNG HỦY ĐĂNG KÝ ĐẾN KHI PHÒNG CẢNH SÁT CẤP LỊCH SÁT HẠCH MỚI HỆ THỐNG SẼ TỰ MỞ LẠI.</div>';
           } else {
             actionHtml = '<button class="btn-cancel" onclick="guiHuyDangKy(\'' + d.cccd + '\')">HỦY ĐĂNG KÝ SÁT HẠCH</button>';
           }
