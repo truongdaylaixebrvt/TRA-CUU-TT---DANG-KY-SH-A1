@@ -143,7 +143,8 @@
       document.getElementById('valSdt').innerText = d.sdt || '';
 
       var skEl = document.getElementById('valSk');
-      skEl.innerText = d.ngayKhamSK || '';
+      var textSK = String(d.ngayKhamSK || '').replace(/\(đạt\)/gi, '(còn hạn)');
+      skEl.innerText = textSK;
       if (String(d.ngayKhamSK).indexOf("Thiếu") !== -1 || String(d.ngayKhamSK).indexOf("hết hạn") !== -1) {
         skEl.className = "highlight-warning";
       } else {
