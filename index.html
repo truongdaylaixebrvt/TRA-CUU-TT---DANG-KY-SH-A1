@@ -37,7 +37,7 @@
     .result-section { display: none; margin-top: 15px; border-top: 2px solid #e2e8f0; padding-top: 12px; }
     .result-title { background: #1a365d; color: white; text-align: center; padding: 8px; font-weight: bold; border-radius: 6px 6px 0 0; font-size: 14px; }
     table.info-table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13.5px; }
-    table.info-table th, table.info-table td { border: 1px solid #e2e8f0; padding: 8px 9px; vertical-align: middle; }
+    table.info-table th, table.info-table td { border: 1px solid #e2e8f0; padding: 8px 9px; vertical-align: middle; line-height: 1.45; }
     table.info-table th { width: 35%; background: #f7fafc; color: #2d3748; text-align: left; }
     .highlight-main { font-weight: bold; color: #1a365d; }
     .highlight-warning { font-weight: bold; color: #e53e3e; }
@@ -177,25 +177,18 @@
       document.getElementById('valSoTN').innerText = d.soTN || '';
       document.getElementById('valHangThi').innerText = d.hangThi || '';
 
-      // Hiển thị số lần sát hạch từ cột R & V trên DS thi
-      var lsHtml = '';
-      if (d.soLanDaSH > 0) {
-        var chiTiet = [];
-        if (d.soLanRot > 0) chiTiet.push('Rớt: ' + d.soLanRot + ' lần');
-        if (d.soLanVang > 0) chiTiet.push('Vắng: ' + d.soLanVang + ' lần');
-        lsHtml = '<b>' + d.soLanDaSH + ' lần</b> (' + chiTiet.join(', ') + ')';
-        if (d.kqGanDay) {
-          lsHtml += '<br>Gần nhất' + (d.ngaySHGanDay ? ' (' + d.ngaySHGanDay + ')' : '') + ': ' + d.kqGanDay;
-        }
+      // Hiển thị nguyên văn chuỗi trong cột AP (tự xuống dòng theo CHAR(10))
+      var lsEl = document.getElementById('valLichSu');
+      if (d.textLichSuSH) {
+        lsEl.innerHTML = d.textLichSuSH.replace(/\n/g, '<br>');
       } else {
-        lsHtml = '0 lần (Chưa dự thi sát hạch)';
+        lsEl.innerText = '0 lần (Chưa có lịch sử sát hạch)';
       }
-      document.getElementById('valLichSu').innerHTML = lsHtml;
 
-      // Hiển thị số lần bỏ lỡ đóng lệ phí từ cột KP trên DS thi
+      // Hiển thị nguyên văn chuỗi trong cột AQ (tự xuống dòng theo CHAR(10))
       var phiEl = document.getElementById('valPhi');
-      if (d.soLanKhongDongPhi > 0) {
-        phiEl.innerText = d.soLanKhongDongPhi + ' lần';
+      if (d.textKhongDongPhi) {
+        phiEl.innerHTML = d.textKhongDongPhi.replace(/\n/g, '<br>');
         phiEl.className = "highlight-warning";
       } else {
         phiEl.innerText = '0 lần (Đã hoàn thành đầy đủ học phí/lệ phí)';
