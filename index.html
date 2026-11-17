@@ -83,8 +83,8 @@
         <tr><th>Số GPLX đã có</th><td id="valSoGplx"></td></tr>
         <tr><th>Mã khóa học</th><td id="valMaKhoa"></td></tr>
         <tr><th>Ngày KG - BG</th><td id="valKhaiGiang"></td></tr>
-        <tr><th>Khóa nhập học</th><td id="valTenKhoa"></td></tr>
-        <tr><th>Khóa tốt nghiệp</th><td id="valTotNghiep"></td></tr>
+        <tr><th>Tên khóa nhập học</th><td id="valTenKhoa"></td></tr>
+        <tr><th>Tên khóa tốt nghiệp</th><td id="valTotNghiep"></td></tr>
         <tr><th>Số xác nhận tốt nghiệp</th><td id="valSoTN"></td></tr>
         <tr><th>Thi cấp GPLX </th><td id="valHangThi" class="highlight-main"></td></tr>
         <tr><th>Số lần sát hạch</th><td id="valLichSu"></td></tr>
@@ -177,17 +177,25 @@
       document.getElementById('valSoTN').innerText = d.soTN || '';
       document.getElementById('valHangThi').innerText = d.hangThi || '';
 
+      // Hiển thị số lần sát hạch từ cột R & V trên DS thi
       var lsHtml = '';
-      if (d.lichSuThi && d.lichSuThi.length > 0) {
-        d.lichSuThi.forEach(function(item, index) {
-          lsHtml += 'Lần ' + (index + 1) + ' - ' + item.ngay + ' - ' + item.ketQua + '<br>';
-        });
-      } else { lsHtml = 'Chưa có lịch sử sát hạch'; }
+      if (d.soLanDaSH > 0) {
+        var chiTiet = [];
+        if (d.soLanRot > 0) chiTiet.push('Rớt: ' + d.soLanRot + ' lần');
+        if (d.soLanVang > 0) chiTiet.push('Vắng: ' + d.soLanVang + ' lần');
+        lsHtml = '<b>' + d.soLanDaSH + ' lần</b> (' + chiTiet.join(', ') + ')';
+        if (d.kqGanDay) {
+          lsHtml += '<br>Gần nhất' + (d.ngaySHGanDay ? ' (' + d.ngaySHGanDay + ')' : '') + ': ' + d.kqGanDay;
+        }
+      } else {
+        lsHtml = '0 lần (Chưa dự thi sát hạch)';
+      }
       document.getElementById('valLichSu').innerHTML = lsHtml;
 
+      // Hiển thị số lần bỏ lỡ đóng lệ phí từ cột KP trên DS thi
       var phiEl = document.getElementById('valPhi');
-      if (d.danhSachKhongDongPhi && d.danhSachKhongDongPhi.length > 0) {
-        phiEl.innerText = d.danhSachKhongDongPhi.length + ' lần (Các kỳ bỏ lỡ: ' + d.danhSachKhongDongPhi.join(', ') + ')';
+      if (d.soLanKhongDongPhi > 0) {
+        phiEl.innerText = d.soLanKhongDongPhi + ' lần';
         phiEl.className = "highlight-warning";
       } else {
         phiEl.innerText = '0 lần (Đã hoàn thành đầy đủ học phí/lệ phí)';
@@ -215,7 +223,7 @@
         if (d.isRegistered) {
           msgDiv.innerHTML = '<div class="alert-box alert-registered">THÔNG BÁO: Thí sinh đã đăng ký tham dự kỳ sát hạch ngày ' + d.registeredDate + ' thành công.</div>';
           if (d.isRegistrationClosed) {
-            actionHtml = '<div class="alert-box alert-error" style="text-align:center; margin-top:12px;">HỒ SƠ KỲ THI NGÀY ' + d.registeredDate + ' ĐÃ CHỐT VÀ MANG ĐẾN PHÒNG CẢNH SÁT GIAO THÔNG CHỜ XÉT DUYỆT, HỆ THỐNG TẠM KHÓA TÍNH NĂNG HỦY ĐĂNG KÝ.</div>';
+            actionHtml = '<div class="alert-box alert-error" style="text-align:center; margin-top:12px;">HỒ SƠ KỲ THI NGÀY ' + d.registeredDate + ' ĐÃ CHỐT VÀ MANG ĐẾN PHÒNG CẢNH SÁT GIAO THÔNG CHỜ XÉT DUYỆT, HỆ THỐNG TẠM KHÓA TÍNH NĂNG HỦY.</div>';
           } else if (d.isFullCapacity) {
             actionHtml = '<div class="alert-box alert-error" style="text-align:center; margin-top:12px;">DANH SÁCH THÍ SINH ĐĂNG KÝ SÁT HẠCH KỲ NÀY ĐÃ ĐẠT CHỈ TIÊU 650 NGƯỜI. HỆ THỐNG TẠM KHÓA TÍNH NĂNG ĐĂNG KÝ & HỦY ĐĂNG KÝ ĐẾN KHI PHÒNG CẢNH SÁT CẤP LỊCH SÁT HẠCH MỚI HỆ THỐNG SẼ TỰ MỞ LẠI.</div>';
           } else {
