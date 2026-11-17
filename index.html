@@ -64,7 +64,7 @@
     </div>
 
     <div class="search-box-container">
-      <input type="text" id="cccdInput" inputmode="numeric" maxlength="12" placeholder="Nhập số căn cước (12 số)..." onkeypress="handleKeyPress(event)" />
+<input type="text" id="cccdInput" inputmode="text" placeholder="Nhập số căn cước hoặc hộ chiếu..." onkeypress="handleKeyPress(event)" />
       <button id="btnSearch" onclick="xuLyTraCuu()">Tra cứu</button>
     </div>
 
@@ -122,7 +122,7 @@
 
     function xuLyTraCuu() {
       var inputEl = document.getElementById('cccdInput');
-      var cccd = inputEl.value.replace(/\s+/g, '').trim();
+var cccd = inputEl.value.toUpperCase().replace(/[^A-Z0-9]/g, '').trim();
       inputEl.value = cccd;
 
       if (!cccd) { alert('Vui lòng nhập số căn cước công dân!'); return; }
